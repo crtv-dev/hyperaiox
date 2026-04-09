@@ -223,13 +223,13 @@ function submitCap(nivel){
   nomeEl.disabled=true;
   telEl.disabled=true;
   ok.style.display='block';
-  // INTEGRAÇÃO GOOGLE SHEETS — cole a URL do Apps Script aqui:
   const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzAqWEMNFysIP6rQ16v2js7ZErnc_UUpFO_ZWEtmQZ-Seu7ULtvFOsVpWD5mj0VTJ474w/exec';
-  fetch(SCRIPT_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({nome,whatsapp:tel,nivel,data:new Date().toLocaleString('pt-BR')})
-  }).catch(()=>{});
+  const fd=new FormData();
+  fd.append('nome',nome);
+  fd.append('whatsapp',tel);
+  fd.append('nivel',nivel);
+  fd.append('data',new Date().toLocaleString('pt-BR'));
+  fetch(SCRIPT_URL,{method:'POST',body:fd}).catch(()=>{});
 }
 
 function restart(){
