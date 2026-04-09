@@ -5,17 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Hype Teens — Qual é o seu nível de conexão?</title>
 <style>
-  :root{
-    --roxo:#6B21C8;
-    --roxo-escuro:#4B0EA0;
-    --roxo-claro:#EDE9FE;
-    --neon:#CCFF00;
-    --neon-escuro:#8BAA00;
-    --branco:#fff;
-    --cinza:#F4F3FF;
-    --texto:#1a1a1a;
-    --texto-muted:#666;
-  }
+  :root{--roxo:#6B21C8;--roxo-escuro:#4B0EA0;--roxo-claro:#EDE9FE;--neon:#CCFF00;--neon-escuro:#8BAA00;--branco:#fff;--cinza:#F4F3FF;--texto:#1a1a1a;--texto-muted:#666}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cinza);color:var(--texto);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
   .card{background:#fff;border-radius:20px;max-width:640px;width:100%;padding:2rem 2rem 2.5rem;border-top:6px solid var(--roxo)}
@@ -71,7 +61,6 @@
 </head>
 <body>
 <div class="card">
-
   <div id="intro-screen">
     <div class="intro">
       <div class="logo-tag">Hype Teens</div>
@@ -85,7 +74,6 @@
       <button class="btn-start" onclick="startQ()">Bora! →</button>
     </div>
   </div>
-
   <div id="quiz-screen" style="display:none">
     <div class="pbar-bg"><div class="pbar-fill" id="pbar" style="width:6%"></div></div>
     <div class="plabel" id="plabel">Pergunta 1 de 15</div>
@@ -97,9 +85,7 @@
       <button class="btn-nav btn-next" id="bnext" onclick="go(1)" disabled>Próxima →</button>
     </div>
   </div>
-
   <div id="result-screen" style="display:none"></div>
-
 </div>
 <script>
 const Qs=[
