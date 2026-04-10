@@ -1,392 +1,270 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hype Diagnóstico — Painel de Acompanhamento</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Hype Teens — Qual é o seu nível de conexão?</title>
 <style>
-  :root {
-    --primary: #6C3CE1;
-    --bg: #F0EDF9;
-    --card: #ffffff;
-    --text: #2d2d2d;
-    --muted: #7a7a9a;
-    --border: #e0d9f5;
-    --danger: #FF4757;
-    --warn: #FFA502;
-    --good: #2ED573;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
-
-  /* HEADER */
-  header {
-    background: linear-gradient(135deg, #6C3CE1 0%, #9B6FF5 100%);
-    color: white; padding: 26px 36px;
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-  }
-  .header-title h1 { font-size: 24px; font-weight: 800; }
-  .header-title p { font-size: 12.5px; opacity: 0.85; margin-top: 3px; }
-  .header-badge { background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 5px 15px; font-size: 12.5px; font-weight: 600; }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 26px 18px; }
-
-  /* ALERTA */
-  .alert-dup { background: #fff8e1; border: 1.5px solid #ffc107; border-radius: 10px; padding: 10px 16px; font-size: 12.5px; color: #7a5100; margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
-
-  /* STATS */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
-  .stat-card { background: var(--card); border-radius: 12px; padding: 16px; border: 1.5px solid var(--border); text-align: center; box-shadow: 0 2px 8px rgba(108,60,225,0.07); }
-  .stat-icon { font-size: 22px; margin-bottom: 5px; }
-  .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; }
-  .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; }
-
-  /* SEÇÃO */
-  .section-title { font-size: 16px; font-weight: 700; color: #1A1A2E; margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
-  .section-title::before { content: ''; display: inline-block; width: 4px; height: 17px; background: var(--primary); border-radius: 4px; }
-
-  /* CHAMADA URGENTE */
-  .call-section { background: #fff0f0; border: 2.5px solid var(--danger); border-radius: 14px; padding: 20px 22px; margin-bottom: 22px; }
-  .call-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .call-section-header h2 { font-size: 17px; font-weight: 800; color: #c0392b; }
-  .call-section-header span { font-size: 22px; }
-  .call-subtitle { font-size: 12.5px; color: #7a3030; margin-bottom: 14px; background: #ffe0e0; border-radius: 8px; padding: 8px 12px; }
-  .call-subtitle strong { color: #c0392b; }
-
-  .call-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-  .call-card {
-    background: white; border: 1.5px solid #ffb3b3; border-radius: 12px; padding: 16px 18px;
-    display: flex; align-items: center; gap: 14px;
-    box-shadow: 0 2px 8px rgba(255,71,87,0.1);
-  }
-  .call-avatar {
-    width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #ff6b6b, #ff4757);
-    display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; flex-shrink: 0;
-  }
-  .call-info { flex: 1; }
-  .call-name { font-size: 15px; font-weight: 700; color: var(--text); }
-  .call-phone { font-size: 14px; color: #c0392b; font-weight: 600; margin-top: 3px; }
-  .call-reasons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
-  .call-reason { background: #ffd5d5; color: #c0392b; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-  .call-empty { text-align: center; color: #27ae60; font-size: 14px; font-weight: 600; padding: 14px; }
-
-  /* GRÁFICOS */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
-  @media(max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
-  .card { background: var(--card); border-radius: 12px; padding: 18px; border: 1.5px solid var(--border); box-shadow: 0 2px 8px rgba(108,60,225,0.06); }
-
-  /* AREAS CRITICAS */
-  .areas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 22px; }
-  .area-card { background: var(--card); border-radius: 12px; padding: 15px 18px; border-left: 5px solid; box-shadow: 0 2px 7px rgba(0,0,0,0.05); }
-  .area-card.high { border-color: var(--danger); background: #fff5f5; }
-  .area-card.medium { border-color: var(--warn); background: #fffaf0; }
-  .area-card.ok { border-color: var(--good); background: #f0fff7; }
-  .area-name { font-size: 13.5px; font-weight: 700; margin-bottom: 5px; }
-  .area-card.high .area-name { color: #c0392b; }
-  .area-card.medium .area-name { color: #d35400; }
-  .area-card.ok .area-name { color: #1a7a4a; }
-  .area-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .area-track { flex: 1; height: 8px; background: #f0edf9; border-radius: 4px; overflow: hidden; }
-  .area-fill { height: 100%; border-radius: 4px; }
-  .area-pct { font-size: 12px; font-weight: 800; min-width: 34px; text-align: right; }
-  .area-card.high .area-pct { color: #c0392b; }
-  .area-card.medium .area-pct { color: #d35400; }
-  .area-card.ok .area-pct { color: #1a7a4a; }
-  .area-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
-  .area-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 5px; }
-  .high .area-badge { background: #ffd5d5; color: #c0392b; }
-  .medium .area-badge { background: #ffe8cc; color: #d35400; }
-  .ok .area-badge { background: #d4f5e9; color: #1a7a4a; }
-
-  /* AÇÕES */
-  .actions-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
-  .action-item { background: var(--card); border-radius: 11px; padding: 13px 16px; border: 1.5px solid var(--border); display: flex; gap: 12px; box-shadow: 0 1px 5px rgba(0,0,0,0.04); }
-  .action-icon { font-size: 19px; flex-shrink: 0; margin-top: 1px; }
-  .action-text h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-  .action-text p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .prio { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 4px; }
-  .prio-alta { background: #ffd5d5; color: #c0392b; }
-  .prio-media { background: #ffe8cc; color: #d35400; }
-  .prio-baixa { background: #d4f5e9; color: #1a7a4a; }
-
-  footer { text-align: center; padding: 18px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); }
-  canvas { max-height: 240px; }
+  :root{--roxo:#6B21C8;--roxo-escuro:#4B0EA0;--roxo-claro:#EDE9FE;--neon:#CCFF00;--cinza:#F4F3FF;--texto:#1a1a1a;--texto-muted:#666}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cinza);color:var(--texto);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
+  .card{background:#fff;border-radius:20px;max-width:640px;width:100%;padding:2rem 2rem 2.5rem;border-top:6px solid var(--roxo)}
+  .intro{text-align:center;padding:0.5rem 0 1.5rem}
+  .logo-tag{display:inline-block;background:var(--roxo);color:var(--neon);font-size:12px;font-weight:700;padding:4px 14px;border-radius:99px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem}
+  .intro h1{font-size:22px;font-weight:700;color:var(--roxo-escuro);margin-bottom:0.6rem;line-height:1.3}
+  .intro p{font-size:15px;color:var(--texto-muted);line-height:1.6;max-width:440px;margin:0 auto 1.5rem}
+  .meta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:1.75rem}
+  .meta-pill{font-size:12px;color:var(--roxo);background:var(--roxo-claro);padding:4px 12px;border-radius:99px;font-weight:500}
+  .btn-start{background:var(--neon);color:var(--roxo-escuro);border:none;border-radius:12px;padding:0.8rem 2.25rem;font-size:16px;font-weight:700;cursor:pointer;transition:background 0.15s}
+  .btn-start:hover{background:#b8e600}
+  .pbar-bg{background:var(--roxo-claro);border-radius:99px;height:6px;margin-bottom:0.4rem}
+  .pbar-fill{height:6px;border-radius:99px;background:var(--roxo);transition:width 0.4s}
+  .plabel{font-size:12px;color:var(--texto-muted);margin-bottom:1.25rem}
+  .block-tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:0.6rem;background:var(--roxo-claro);color:var(--roxo);text-transform:uppercase;letter-spacing:0.05em}
+  .qtext{font-size:17px;font-weight:600;color:var(--roxo-escuro);line-height:1.5;margin-bottom:1rem}
+  .opt{display:block;width:100%;text-align:left;padding:0.75rem 1rem;margin-bottom:0.5rem;border:2px solid #E5E3F0;border-radius:12px;background:#fff;color:var(--texto);font-size:15px;cursor:pointer;line-height:1.4;font-family:inherit;transition:border-color 0.15s,background 0.15s}
+  .opt:hover{border-color:var(--roxo);background:var(--roxo-claro)}
+  .opt.sel{border-color:var(--roxo);background:var(--roxo-claro);color:var(--roxo-escuro);font-weight:600}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem}
+  .btn-nav{padding:0.5rem 1.1rem;border:2px solid #E5E3F0;border-radius:10px;background:#fff;color:var(--texto);font-size:14px;cursor:pointer;font-family:inherit;transition:background 0.15s}
+  .btn-nav:hover:not(:disabled){background:var(--roxo-claro)}
+  .btn-nav:disabled{opacity:0.3;cursor:default}
+  .btn-next{background:var(--roxo);color:#fff;border-color:var(--roxo);font-weight:600}
+  .btn-next:hover:not(:disabled){background:var(--roxo-escuro)}
+  .res-wrap{text-align:center;padding:0.5rem 0}
+  .res-badge{display:inline-block;padding:5px 18px;border-radius:99px;font-size:13px;font-weight:700;margin-bottom:0.75rem}
+  .res-title{font-size:28px;font-weight:700;margin-bottom:0.5rem;color:var(--roxo-escuro)}
+  .res-desc{font-size:15px;color:var(--texto-muted);line-height:1.7;margin-bottom:1.25rem}
+  .seg-row{display:flex;gap:4px;margin-bottom:0.3rem}
+  .seg{flex:1;height:9px;border-radius:99px;background:#E5E3F0}
+  .seg-names{display:flex;gap:4px;margin-bottom:1.25rem}
+  .seg-name{flex:1;font-size:10px;color:#aaa;text-align:center}
+  .divider{border:none;border-top:1.5px solid #F1EFE8;margin:1.25rem 0}
+  .steps-title{font-size:14px;font-weight:700;color:var(--roxo-escuro);margin-bottom:0.75rem;text-align:left}
+  .step-card{background:var(--roxo-claro);border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.6rem;text-align:left}
+  .step-card strong{font-size:14px;font-weight:700;color:var(--roxo-escuro)}
+  .step-card p{font-size:13px;color:var(--roxo);margin-top:3px;line-height:1.5}
+  .cap-box{background:var(--roxo-claro);border-radius:14px;padding:1.25rem;text-align:left;margin-bottom:1rem;border:2px solid var(--roxo)}
+  .cap-box h3{font-size:15px;font-weight:700;color:var(--roxo-escuro);margin-bottom:4px}
+  .cap-box p{font-size:13px;color:var(--roxo);margin-bottom:1rem;line-height:1.5}
+  .cap-fields{display:flex;gap:8px;flex-wrap:wrap}
+  .cap-fields input{flex:1;min-width:140px;padding:0.65rem 0.9rem;border:2px solid #C4B5F4;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--texto)}
+  .cap-fields input:focus{border-color:var(--roxo)}
+  .btn-cap{margin-top:10px;width:100%;padding:0.7rem 1rem;background:var(--neon);color:var(--roxo-escuro);border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn-cap:hover{background:#b8e600}
+  .cap-err{font-size:12px;color:#dc2626;margin-top:6px;display:none}
+  .cap-ok{display:none;margin-top:10px;font-size:13px;color:#059669;font-weight:700}
+  .btn-restart{display:block;margin:0.5rem auto 0;padding:0.5rem 1.5rem;border:2px solid #E5E3F0;border-radius:10px;background:#fff;color:var(--texto-muted);font-size:13px;cursor:pointer;font-family:inherit}
+  .btn-restart:hover{background:var(--roxo-claro)}
+  @media(max-width:480px){.card{padding:1.25rem 1rem 2rem}.intro h1{font-size:19px}.qtext{font-size:16px}}
 </style>
 </head>
 <body>
-
-<header>
-  <div class="header-title">
-    <h1>🔥 Hype Diagnóstico</h1>
-    <p>Painel de Acompanhamento · Atualizado em 09/04/2026</p>
-  </div>
-  <div class="header-badge">6 adolescentes · 3 níveis</div>
-</header>
-
-<div class="container">
-
-  <div class="alert-dup">
-    <span>⚠️</span>
-    <div><strong>Duplicatas detectadas:</strong> 4 submissões repetidas de um mesmo adolescente foram removidas. Verificar possível bug no formulário.</div>
-  </div>
-
-  <!-- RESUMO -->
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">6</div><div class="stat-label">Adolescentes</div></div>
-    <div class="stat-card"><div class="stat-icon">🚀</div><div class="stat-value">3</div><div class="stat-label">Hypado</div></div>
-    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-value">2</div><div class="stat-label">Hype Raiz</div></div>
-    <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">1</div><div class="stat-label">Aura Boa</div></div>
-    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value">78%</div><div class="stat-label">Engajamento médio</div></div>
-    <div class="stat-card"><div class="stat-icon">📞</div><div class="stat-value">1</div><div class="stat-label">Precisam de ligação</div></div>
-  </div>
-
-  <!-- LIGAÇÃO URGENTE -->
-  <div class="call-section">
-    <div class="call-section-header">
-      <span>📞</span>
-      <h2>Precisam de Ligação Urgente</h2>
-    </div>
-    <div class="call-subtitle">
-      Critérios: <strong>sem família/amigos cristãos no Hype</strong> + <strong>nunca foi a um GC</strong> + <strong>sem contato real com líder</strong>
-    </div>
-    <div class="call-cards">
-
-      <div class="call-card">
-        <div class="call-avatar">M</div>
-        <div class="call-info">
-          <div class="call-name">Mariana</div>
-          <div class="call-phone">📱 (62) 99655-0222</div>
-          <div class="call-reasons">
-            <span class="call-reason">Sem rede cristã</span>
-            <span class="call-reason">Nunca foi ao GC</span>
-            <span class="call-reason">Sem contato com líder</span>
-          </div>
-        </div>
+<div class="card">
+  <div id="intro-screen">
+    <div class="intro">
+      <div class="logo-tag">Hype Teens</div>
+      <h1>Qual é o seu nível de conexão com o Hype?</h1>
+      <p>Responde algumas perguntinhas rápidas e descobre onde você está — do "cheguei agora" ao "hypado de verdade".</p>
+      <div class="meta-row">
+        <span class="meta-pill">5 minutinhos</span>
+        <span class="meta-pill">15 perguntas</span>
+        <span class="meta-pill">Resultado na hora</span>
       </div>
-
+      <button class="btn-start" onclick="startQ()">Bora! →</button>
     </div>
   </div>
-
-  <!-- GRÁFICOS -->
-  <div class="two-col">
-    <div class="card">
-      <div class="section-title">Score por Adolescente</div>
-      <canvas id="barChart"></canvas>
-    </div>
-    <div class="card">
-      <div class="section-title">Média por Área (%)</div>
-      <canvas id="areaChart"></canvas>
+  <div id="quiz-screen" style="display:none">
+    <div class="pbar-bg"><div class="pbar-fill" id="pbar" style="width:6%"></div></div>
+    <div class="plabel" id="plabel">Pergunta 1 de 15</div>
+    <div class="block-tag" id="btag"></div>
+    <div class="qtext" id="qtext"></div>
+    <div id="opts"></div>
+    <div class="nav">
+      <button class="btn-nav" id="bprev" onclick="go(-1)" disabled>← Voltar</button>
+      <button class="btn-nav btn-next" id="bnext" onclick="go(1)" disabled>Próxima →</button>
     </div>
   </div>
-
-  <!-- ÁREAS CRÍTICAS -->
-  <div class="section-title">🚨 Áreas Críticas do Grupo</div>
-  <div class="areas-grid">
-
-    <div class="area-card high">
-      <div class="area-name">⛔ Hype Academy</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:50%;background:#ff4757;"></div></div>
-        <span class="area-pct">50%</span>
-      </div>
-      <div class="area-desc">Área mais fraca do grupo. 1 adolescente nunca ouviu falar, 1 já ouviu mas nunca fez. Apenas 1 fez e quer repetir.</div>
-      <span class="area-badge">4 de 6 abaixo do ideal</span>
-    </div>
-
-    <div class="area-card medium">
-      <div class="area-name">⚠️ Hype Sports</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:67%;background:#ffa502;"></div></div>
-        <span class="area-pct">67%</span>
-      </div>
-      <div class="area-desc">Apenas 2 dos 6 participam sempre. Os outros foram poucas vezes. Baixa consistência na atividade física do ministério.</div>
-      <span class="area-badge">4 de 6 com baixa frequência</span>
-    </div>
-
-    <div class="area-card medium">
-      <div class="area-name">⚠️ WhatsApp — Engajamento digital</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:72%;background:#ffa502;"></div></div>
-        <span class="area-pct">72%</span>
-      </div>
-      <div class="area-desc">2 adolescentes estão no grupo mas não interagem. 1 lê mas raramente responde. Apenas 3 participam ativamente.</div>
-      <span class="area-badge">3 de 6 com baixa interação</span>
-    </div>
-
-    <div class="area-card medium">
-      <div class="area-name">⚠️ Sonhos no Hype</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:78%;background:#ffa502;"></div></div>
-        <span class="area-pct">78%</span>
-      </div>
-      <div class="area-desc">2 adolescentes têm baixa visão de futuro no ministério. Os outros 4 dizem "já vivi tudo" — o que pode indicar estagnação.</div>
-      <span class="area-badge">2 de 6 sem visão de crescimento</span>
-    </div>
-
-    <div class="area-card medium">
-      <div class="area-name">⚠️ Barreiras de participação</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:78%;background:#ffa502;"></div></div>
-        <span class="area-pct">78%</span>
-      </div>
-      <div class="area-desc">2 adolescentes citam rotina e falta de tempo como barreira. Pode indicar necessidade de formatos mais flexíveis.</div>
-      <span class="area-badge">2 de 6 com barreiras ativas</span>
-    </div>
-
-    <div class="area-card ok">
-      <div class="area-name">✅ Presença no culto</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:94%;background:#2ed573;"></div></div>
-        <span class="area-pct">94%</span>
-      </div>
-      <div class="area-desc">5 dos 6 vão toda semana sem falta. Ponto fortíssimo do grupo — base sólida de comprometimento.</div>
-      <span class="area-badge">Ponto forte</span>
-    </div>
-
-    <div class="area-card ok">
-      <div class="area-name">✅ GC — Pequeno Grupo</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:83%;background:#2ed573;"></div></div>
-        <span class="area-pct">83%</span>
-      </div>
-      <div class="area-desc">5 dos 6 estão em GC ou já foram. Apenas 1 nunca participou. Boa cobertura, mas esse 1 precisa de ação imediata.</div>
-      <span class="area-badge">Bom — 1 exceção crítica</span>
-    </div>
-
-    <div class="area-card ok">
-      <div class="area-name">✅ Líder de referência</div>
-      <div class="area-bar-wrap">
-        <div class="area-track"><div class="area-fill" style="width:89%;background:#2ed573;"></div></div>
-        <span class="area-pct">89%</span>
-      </div>
-      <div class="area-desc">5 dos 6 têm líder ativo no processo. Apenas 1 adolescente diz ter líder mas sem contato real — vínculo frágil.</div>
-      <span class="area-badge">Bom — 1 exceção crítica</span>
-    </div>
-
-  </div>
-
-  <!-- AÇÕES -->
-  <div class="section-title">🎯 Ações Recomendadas</div>
-  <div class="actions-list">
-
-    <div class="action-item">
-      <div class="action-icon">📞</div>
-      <div class="action-text">
-        <h4>Ligar para Mariana hoje</h4>
-        <p>Único adolescente sem nenhuma rede de apoio cristã no Hype: sem família, sem GC, sem contato com líder. Risco alto de desengajamento silencioso. Contato: (62) 99655-0222.</p>
-        <span class="prio prio-alta">Prioridade Urgente</span>
-      </div>
-    </div>
-
-    <div class="action-item">
-      <div class="action-icon">📚</div>
-      <div class="action-text">
-        <h4>Campanha de divulgação da Hype Academy</h4>
-        <p>Área mais fraca do grupo — 4 de 6 adolescentes nunca fizeram ou nunca ouviram falar. Uma apresentação clara do que é, como funciona e próximas datas pode mudar esse cenário rapidamente.</p>
-        <span class="prio prio-alta">Prioridade Alta</span>
-      </div>
-    </div>
-
-    <div class="action-item">
-      <div class="action-icon">💬</div>
-      <div class="action-text">
-        <h4>Ativar engajamento no grupo de WhatsApp</h4>
-        <p>3 dos 6 adolescentes não interagem no grupo. Criar dinâmicas semanais — perguntas, votações, conteúdo interativo — pode quebrar o silêncio. Os 3 que já participam ativamente podem ser mobilizadores.</p>
-        <span class="prio prio-media">Prioridade Média</span>
-      </div>
-    </div>
-
-    <div class="action-item">
-      <div class="action-icon">🌈</div>
-      <div class="action-text">
-        <h4>Conversa sobre propósito com os que "já viveram tudo"</h4>
-        <p>4 adolescentes responderam "já vivi tudo que quero viver" — isso pode indicar estagnação espiritual. Uma conversa sobre próximos passos e novos desafios pode reacender o senso de propósito.</p>
-        <span class="prio prio-media">Prioridade Média</span>
-      </div>
-    </div>
-
-    <div class="action-item">
-      <div class="action-icon">🏋️</div>
-      <div class="action-text">
-        <h4>Aumentar frequência no Hype Sports</h4>
-        <p>4 dos 6 foram poucas vezes. Verificar se os horários e formatos funcionam para a rotina dos adolescentes — pode haver uma barreira prática não declarada.</p>
-        <span class="prio prio-baixa">Prioridade Baixa</span>
-      </div>
-    </div>
-
-    <div class="action-item">
-      <div class="action-icon">🔁</div>
-      <div class="action-text">
-        <h4>Corrigir bug no formulário de diagnóstico</h4>
-        <p>Um adolescente submeteu o formulário 5 vezes. Adicionar uma tela de confirmação clara após o envio pode resolver o problema.</p>
-        <span class="prio prio-media">Ação Técnica</span>
-      </div>
-    </div>
-
-  </div>
-
+  <div id="result-screen" style="display:none"></div>
 </div>
-
-<footer>
-  Hype Diagnóstico · 6 adolescentes únicos · Gerado em 09/04/2026
-</footer>
-
 <script>
-const COLORS = ['#f39c12','#27ae60','#6C3CE1','#0097A7','#e74c3c','#8e44ad'];
+const Qs=[
+  {block:"Quem é você",q:"Quantos anos você tem?",opts:["13 ou 14 anos","15 ou 16 anos","17 anos"],scores:[1,2,3]},
+  {block:"Quem é você",q:"Há quanto tempo você se converteu?",opts:["Menos de 6 meses","Entre 6 meses e 2 anos","Mais de 2 anos","Cresci na igreja"],scores:[1,2,3,3]},
+  {block:"Quem é você",q:"Seus pais são da igreja?",opts:["Nenhum dos dois","Um deles","Os dois","Moro com outros responsáveis que são da igreja"],scores:[0,1,2,2]},
+  {block:"Sua presença no Hype",q:"Com que frequência você vai ao culto do Hype?",opts:["Quase nunca ou nunca","Uma vez por mês","Quase toda semana","Toda semana, sem falta"],scores:[0,1,2,3]},
+  {block:"Sua presença no Hype",q:"Você participa do Hype Sports (programação de esportes)?",opts:["Nunca fui","Já fui algumas vezes","Vou sempre que rola"],scores:[0,1,2]},
+  {block:"Sua presença no Hype",q:"Você participa de algum GC (pequeno grupo)?",opts:["Nem sei o que é GC","Já ouvi falar, mas nunca fui","Já fui algumas vezes","Faço parte de um GC e participo sempre"],scores:[0,1,2,3]},
+  {block:"Sua presença no Hype",q:"Como você usa o grupo do WhatsApp do Hype?",opts:["Nem estou no grupo","Estou no grupo mas não interajo","Leio as mensagens mas raramente falo","Participo, converso e me informo pelo grupo"],scores:[0,1,2,3]},
+  {block:"Sua presença no Hype",q:"Você já foi contatado por alguém do Connect (time de acolhimento)?",opts:["Não, nunca","Sim, uma vez","Sim, mais de uma vez e me sinto acolhido"],scores:[0,1,2]},
+  {block:"Sua presença no Hype",q:"Você já fez algum curso da Hype Academy?",opts:["Não, nunca ouvi falar","Já ouvi falar mas não fiz","Já fiz um curso","Já fiz mais de um curso"],scores:[0,1,2,3]},
+  {block:"Sua presença no Hype",q:"Você já participou de alguma programação extra, como um retiro?",opts:["Nunca","Já fui uma vez","Já fui mais de uma vez"],scores:[0,1,2]},
+  {block:"Sua presença no Hype",q:"Você já foi no Awake?",opts:["Não, nunca","Sim, uma vez","Sim, já fui mais de uma vez"],scores:[0,1,2]},
+  {block:"Sua presença no Hype",q:"Você tem um líder do Hype que te conhece pelo nome?",opts:["Não, ninguém me conhece ainda","Acho que sim, mas não temos contato","Sim, e a gente se fala às vezes","Sim, tenho um líder de referência no meu processo"],scores:[0,1,2,3]},
+  {block:"Sua presença no Hype",q:"Você já trouxe algum amigo ou colega ao Hype?",opts:["Nunca pensei nisso","Já convidei mas ninguém veio","Sim, já trouxe alguém"],scores:[0,1,2]},
+  {block:"Seus sonhos no Hype",q:"O que te impede de participar mais do Hype?",opts:["Nada — já participo bastante","Minha rotina e falta de tempo","Não me sinto tão à vontade ainda","Meus pais ou responsáveis limitam minha participação"],scores:[3,1,1,0]},
+  {block:"Seus sonhos no Hype",q:"O que você ainda quer viver no Hype que ainda não viveu?",opts:["Fazer parte de um GC","Ir a um retiro ou Awake","Servir em alguma área do ministério","Fazer um curso da Hype Academy","Já vivi tudo que quero viver"],scores:[1,1,2,1,3]},
+];
 
-// BAR CHART — scores individuais (com nomes pois é para uso interno da liderança)
-const barCtx = document.getElementById('barChart').getContext('2d');
-new Chart(barCtx, {
-  type: 'bar',
-  data: {
-    labels: ['Mariana', 'Mikaellu', 'Davi', 'Laura', 'Mel', 'Ana Julya'],
-    datasets: [{
-      label: 'Score (%)',
-      data: [44, 79, 90, 79, 90, 85],
-      backgroundColor: COLORS.map(c => c + 'BB'),
-      borderColor: COLORS,
-      borderWidth: 2, borderRadius: 7,
-    }]
-  },
-  options: {
-    responsive: true,
-    scales: {
-      y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: '#f0edf9' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    },
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + '%' } } }
-  }
-});
+const levels=[
+  {name:"Cheguei agora",color:"#6B21C8",tc:"#fff",badge:"Nível 1",desc:"Você está chegando, e isso já é um passo enorme! O Hype é o seu lugar e a gente quer te conhecer mais. Bora dar o próximo passo?",steps:[{t:"Vai ao próximo culto",d:"A melhor forma de se conectar é aparecer. Te esperamos toda semana!"},{t:"Entra no grupo do WhatsApp",d:"Fala com um líder e pede pra entrar — é por lá que a galera se encontra."},{t:"Fala com alguém do Connect",d:"A gente quer te conhecer de verdade. Chega junto!"}]},
+  {name:"Farmando aura",color:"#8B5CF6",tc:"#fff",badge:"Nível 2",desc:"Você já aparece por aqui — e a gente já te viu! Agora é hora de dar um passo a mais e se conectar de verdade com a galera.",steps:[{t:"Vai a um GC",d:"Pequenos grupos são onde a amizade de verdade acontece. Pergunta a um líder como entrar."},{t:"Interage no WhatsApp",d:"Não precisa postar muito — mas mandar um 'oi' já conta!"},{t:"Vai em uma programação extra",d:"Retiro ou Awake mudam tudo. Se rolar uma oportunidade, vai de cabeça!"}]},
+  {name:"Aura boa",color:"#CCFF00",tc:"#3B1D8A",badge:"Nível 3",desc:"Você já faz parte do Hype e isso aparece! Está no caminho certo. Agora é intensificar e se envolver em mais frentes.",steps:[{t:"Experimenta a Hype Academy",d:"Tem cursos incríveis esperando por você. Pergunta a um líder o que tem disponível."},{t:"Traz alguém junto",d:"Chama um amigo, um colega da escola. Compartilha o que você está vivendo."},{t:"Se aproxima de um líder",d:"Ter alguém que te acompanha de perto faz toda a diferença na sua jornada."}]},
+  {name:"Hype raiz",color:"#4B0EA0",tc:"#CCFF00",badge:"Nível 4",desc:"Você é Hype raiz mesmo! Está presente, conectado e faz parte da vida do ministério. A galera te vê e te sente aqui.",steps:[{t:"Pensa em servir",d:"Você tem tudo para fazer parte de alguma equipe. Fala com um líder sobre as possibilidades."},{t:"Acompanha quem chegou agora",d:"Lembra de quando você chegou? Você pode ser essa referência para alguém novo."},{t:"Vai ao próximo Awake ou retiro",d:"Se ainda não foi, esse é o próximo nível da sua experiência no Hype."}]},
+  {name:"Hypado",color:"#CCFF00",tc:"#3B1D8A",badge:"Nível 5",desc:"Você é HYPADO de verdade! Referência de presença, conexão e pertencimento. O Hype é parte da sua vida e você é parte do Hype.",steps:[{t:"Investe em quem está chegando",d:"Sua história e presença têm poder. Seja referência para os novos."},{t:"Continua firme",d:"Manter a consistência é o que separa os que passam dos que ficam."},{t:"Sonha junto com a liderança",d:"Você está pronto para ir além. Conversa com um líder sobre seus próximos passos."}]},
+];
 
-// HORIZONTAL BAR — média por área
-const areaCtx = document.getElementById('areaChart').getContext('2d');
-const areaLabels = ['Culto','GC','WhatsApp','Academy','Retiro/Awake','Líder','Trouxe alguém','Barreiras','Sports','Sonhos'];
-const areaData   = [94, 83, 72, 50, 100, 89, 92, 78, 67, 78];
-const areaColors = areaData.map(v => v >= 85 ? '#2ed573' : v >= 70 ? '#ffa502' : '#ff4757');
+let ans=new Array(Qs.length).fill(null);
+let cur=0;
 
-new Chart(areaCtx, {
-  type: 'bar',
-  data: {
-    labels: areaLabels,
-    datasets: [{
-      label: 'Média (%)',
-      data: areaData,
-      backgroundColor: areaColors.map(c => c + 'BB'),
-      borderColor: areaColors,
-      borderWidth: 1.5, borderRadius: 5,
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    scales: {
-      x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: '#f0edf9' } },
-      y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    },
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + '%' } } }
-  }
-});
+function startQ(){
+  document.getElementById('intro-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  render();
+}
+
+function render(){
+  const q=Qs[cur];
+  document.getElementById('btag').textContent=q.block;
+  document.getElementById('qtext').textContent=q.q;
+  const wrap=document.getElementById('opts');
+  wrap.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'+(ans[cur]===i?' sel':'');
+    b.textContent=o;
+    b.onclick=()=>sel(i);
+    wrap.appendChild(b);
+  });
+  const pct=Math.round(((cur+1)/Qs.length)*100);
+  document.getElementById('pbar').style.width=pct+'%';
+  document.getElementById('plabel').textContent='Pergunta '+(cur+1)+' de '+Qs.length;
+  document.getElementById('bprev').disabled=cur===0;
+  const isLast=cur===Qs.length-1;
+  const nb=document.getElementById('bnext');
+  nb.textContent=isLast?'Ver meu resultado →':'Próxima →';
+  nb.disabled=ans[cur]===null;
+}
+
+function sel(i){
+  ans[cur]=i;
+  document.querySelectorAll('.opt').forEach((b,idx)=>b.className='opt'+(idx===i?' sel':''));
+  document.getElementById('bnext').disabled=false;
+}
+
+function go(dir){
+  if(dir===1&&cur===Qs.length-1){showResult();return;}
+  cur=Math.max(0,Math.min(Qs.length-1,cur+dir));
+  render();
+}
+
+function showResult(){
+  const total=ans.reduce((s,a,i)=>s+(a===null?0:Qs[i].scores[a]),0);
+  const max=Qs.reduce((s,q)=>s+Math.max(...q.scores),0);
+  const pct=total/max;
+  const lvl=pct<0.2?0:pct<0.4?1:pct<0.6?2:pct<0.8?3:4;
+  const l=levels[lvl];
+  document.getElementById('quiz-screen').style.display='none';
+  const rs=document.getElementById('result-screen');
+  const segs=[0,1,2,3,4].map(i=>`<div class="seg" style="${i<=lvl?'background:'+l.color:''}"></div>`).join('');
+  const names=levels.map(lv=>`<div class="seg-name">${lv.name}</div>`).join('');
+  const steps=l.steps.map(s=>`<div class="step-card"><strong>${s.t}</strong><p>${s.d}</p></div>`).join('');
+  rs.innerHTML=`
+    <div class="res-wrap">
+      <div class="res-badge" style="background:${l.color};color:${l.tc}">${l.badge} — ${l.name}</div>
+      <div class="res-title">Você é ${l.name}!</div>
+      <div class="res-desc">${l.desc}</div>
+      <div class="seg-row">${segs}</div>
+      <div class="seg-names">${names}</div>
+      <div class="divider"></div>
+      <div class="steps-title">Seus próximos passos</div>
+      ${steps}
+      <div class="divider"></div>
+      <div class="cap-box">
+        <h3>Coloca seu nome aqui!</h3>
+        <p>Assim a liderança do Hype pode te conhecer melhor e te acompanhar na jornada.</p>
+        <div class="cap-fields">
+          <input type="text" id="cap-nome" placeholder="Seu nome completo"/>
+          <input type="tel" id="cap-tel" placeholder="Seu WhatsApp"/>
+        </div>
+        <div class="cap-err" id="cap-err">Preenche seu nome e WhatsApp pra continuar.</div>
+        <button class="btn-cap" onclick="submitCap('${l.name}')">Enviar pro time do Hype →</button>
+        <div class="cap-ok" id="cap-ok">Mandado! A liderança vai te chamar em breve.</div>
+      </div>
+      <button class="btn-restart" onclick="restart()">Refazer o questionário</button>
+    </div>`;
+  rs.style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function gerarRelatorio(){
+  const blocos={
+    'Perfil':[0,1,2],
+    'Presença no culto':[3],
+    'Hype Sports':[4],
+    'GC (pequeno grupo)':[5],
+    'WhatsApp':[6],
+    'Connect':[7],
+    'Hype Academy':[8],
+    'Retiro':[9],
+    'Awake':[10],
+    'Líder de referência':[11],
+    'Já trouxe alguém':[12],
+    'Barreiras de participação':[13],
+    'Sonhos no Hype':[14],
+  };
+  const respostas=[];
+  const criticos=[];
+  Object.keys(blocos).forEach(bloco=>{
+    const idxs=blocos[bloco];
+    let somaMax=0;let somaObtida=0;
+    idxs.forEach(i=>{
+      const score=ans[i]===null?0:Qs[i].scores[ans[i]];
+      const maxScore=Math.max(...Qs[i].scores);
+      somaObtida+=score;somaMax+=maxScore;
+      const resposta=ans[i]===null?'Não respondeu':Qs[i].opts[ans[i]];
+      respostas.push(bloco+': '+resposta+' ['+score+'/'+maxScore+' pts]');
+    });
+    const pct=somaMax>0?Math.round((somaObtida/somaMax)*100):0;
+    if(pct<40&&bloco!=='Perfil')criticos.push(bloco+' ('+pct+'%)');
+  });
+  return{
+    respostas:respostas.join(' | '),
+    criticos:criticos.length>0?criticos.join(', '):'Nenhum ponto crítico identificado'
+  };
+}
+
+function submitCap(nivel){
+  const nomeEl=document.getElementById('cap-nome');
+  const telEl=document.getElementById('cap-tel');
+  const err=document.getElementById('cap-err');
+  const ok=document.getElementById('cap-ok');
+  const nome=nomeEl.value.trim();
+  const tel=telEl.value.trim();
+  if(!nome||!tel){err.style.display='block';return;}
+  err.style.display='none';
+  nomeEl.disabled=true;
+  telEl.disabled=true;
+  ok.style.display='block';
+  const rel=gerarRelatorio();
+  const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzAqWEMNFysIP6rQ16v2js7ZErnc_UUpFO_ZWEtmQZ-Seu7ULtvFOsVpWD5mj0VTJ474w/exec';
+  const fd=new FormData();
+  fd.append('nome',nome);
+  fd.append('whatsapp',tel);
+  fd.append('nivel',nivel);
+  fd.append('pontos_criticos',rel.criticos);
+  fd.append('respostas_detalhadas',rel.respostas);
+  fd.append('data',new Date().toLocaleString('pt-BR'));
+  fetch(SCRIPT_URL,{method:'POST',body:fd}).catch(()=>{});
+}
+
+function restart(){
+  ans=new Array(Qs.length).fill(null);
+  cur=0;
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('intro-screen').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 </script>
 </body>
 </html>
